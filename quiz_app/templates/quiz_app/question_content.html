@@ -1,0 +1,26 @@
+<div class="question-number">Domanda {{ question_number }} di 10</div>
+<div class="progress-bar">
+    <div class="progress" style="width: {{ progress }}%"></div>
+</div>
+
+<div class="image-info">
+    <span class="observed-date">Osservata il: {{ image.observation.observed_on }}</span>
+    <span class="copyright">{{ image.license_code }} | {{ image.attribution }}</span>
+</div>
+
+<div class="image-container">
+    <img src="{{ image.url }}" alt="Immagine farfalla" class="butterfly-image">
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <div class="species-choices">
+        {% for species in species_choices %}
+            <label class="species-choice">
+                <input type="radio" name="species" value="{{ species.id }}" required>
+                {{ species.name }}
+            </label>
+        {% endfor %}
+    </div>
+    <button type="submit" class="submit-button">Conferma risposta</button>
+</form>

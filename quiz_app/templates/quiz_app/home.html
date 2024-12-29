@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper home">
+    <h1 class="main-title">Quiz Farfalle</h1>
+    <p class="subtitle">Metti alla prova le tue conoscenze sulle farfalle d'Italia!</p>
+
+    <div class="quiz-options">
+        <div class="quiz-option">
+            <img src="{% static 'quiz_app/images/multiple_choices.GIF' %}" alt="Quiz a Scelta Multipla" class="home-gif">
+            <a href="{% url 'quiz_app:start_quiz' quiz_type='multiple_choice' %}" class="quiz-button">Quiz a Scelta Multipla</a>
+        </div>
+        <div class="quiz-option">
+            <img src="{% static 'quiz_app/images/text_input.GIF' %}" alt="Quiz a Inserimento" class="home-gif">
+            <a href="{% url 'quiz_app:start_quiz' quiz_type='text_input' %}" class="quiz-button">Quiz a Inserimento</a>
+        </div>
+        <div class="quiz-option">
+            <img src="{% static 'quiz_app/images/unveiling.GIF' %}" alt="Unveiling" class="home-gif">
+            <a href="{% url 'unveiling:aesthetic_choice' %}" class="quiz-button">Scegli la tua farfalla preferita</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

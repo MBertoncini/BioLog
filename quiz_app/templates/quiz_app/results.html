@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="results-container">
+    <h1>Risultati del Quiz</h1>
+    
+    <div class="results-columns">
+        <div class="statistics-column">
+            <h2>Statistiche</h2>
+            
+            <div class="quiz-summary">
+                <h3>Riepilogo Quiz</h3>
+                <p>Punteggio: <strong>{{ quiz_session.score }} / {{ quiz_session.total_questions }}</strong></p>
+                <p>Accuratezza: <strong>{{ accuracy|floatformat:2 }}%</strong></p>
+                <p>Tempo impiegato: <strong>
+                    {% with time_diff=quiz_session.end_time|timeuntil:quiz_session.start_time %}
+                        {% if "," in time_diff %}
+                            {{ time_diff|cut:" 0 secondi" }}
+                        {% else %}
+                            {{ time_diff }}
+                        {% endif %}
+                    {% endwith %}
+                </strong></p>            </div>
+
+            <div class="chart-item">
+                <h3>Grafico Accuratezza</h3>
+                <canvas id="accuracyChart"></canvas>
+            </div>
+            
+            <div class="difficult-species">
+                <h3>Specie più difficili per l'utente</h3>
+                {% for species in difficult_species %}
+                    <div class="species-item" data-error-count="{{ species.error_count }}">
+                        <span class="species-name">{{ species.species__name }}:    <span class="error-count">{{ species.error_count }}</span></span>
+                        <div class="progress-bar">
+                            <div class="progress"></div>
+                        </div>
+                     
+                    </div>
+                {% endfor %}
+            </div>
+            
+           
+            <div class="chart-item">
+                <h3>Prestazioni nel tempo</h3>
+                <div class="chart-controls">
+                    <button id="last7Days">Ultimi 7 giorni</button>
+                    <button id="last30Days">Ultimi 30 giorni</button>
+                </div>
+                <canvas id="performanceChart"></canvas>
+            </div>
+        </div>
+        
+        <div class="review-column">
+            <h2>Revisione Quiz</h2>
+            {% for question in quiz_questions %}
+                <div class="question-item {% if question.is_correct %}correct{% else %}incorrect{% endif %}">
+                    <img src="{{ question.image.url }}" alt="Immagine della domanda" class="question-image">
+                    <div class="question-details">
+                        <p><strong>Domanda {{ forloop.counter }}:</strong> {{ question.species.name }}</p>
+                        <p><strong>La tua risposta:</strong> {{ question.user_answer.name }}</p>
+                        {% if not question.is_correct %}
+                            <p><strong>Risposta corretta:</strong> {{ question.species.name }}</p>
+                        {% endif %}
+                        <a href="{{ question.image.observation.url }}" target="_blank" class="observation-link">Vedi osservazione</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+    
+    {% if new_achievements %}
+        <div class="achievements-section">
+            <h3>Achievement sbloccati</h3>
+            {% for achievement in new_achievements %}
+                <div class="achievement-item unlocked" data-description="{{ achievement.description }}">
+                    <img src="{{ achievement.icon.url }}" alt="{{ achievement.name }}">
+                    <span>{{ achievement.name }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+    
+    <div class="new-quiz-button-container">
+        <a href="{% url 'quiz_app:start_quiz' quiz_type='multiple_choice' %}" class="btn btn-primary btn-lg">Inizia un nuovo quiz</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    var correctAnswers = {{ quiz_session.score }};
+    var incorrectAnswers = {{ quiz_session.total_questions }} - {{ quiz_session.score }};
+</script>
+<script src="{% static 'quiz_app/js/quiz_results.js' %}"></script>
+<script src="{% static 'quiz_app/js/achievement_tooltips.js' %}"></script>
+{% endblock %}

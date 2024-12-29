@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'quiz_app/css/user_profile.css' %}">
+{% endblock %}
+{% block content %}
+<div class="content-wrapper user-profile">
+    <header class="profile-header">
+        <div class="profile-name">   
+            <h1 class="profile-username">{{ profile_user.username }}</h1>
+            {% if is_own_profile %}
+                <a href="{% url 'quiz_app:edit_profile' %}" class="edit-profile-button">
+                    <i class="fas fa-edit"></i> Modifica Profilo
+                </a>
+            {% endif %}
+        </div>
+        <div class="profile-main">
+            <div class="profile-avatar-container">
+                <img src="{% if profile_user.userprofile.avatar %}{{ profile_user.userprofile.avatar.url }}{% else %}{% static 'quiz_app/images/default_avatar.png' %}{% endif %}" alt="Profile Avatar" class="profile-avatar" id="profileAvatar">
+                {% if request.user == profile_user %}
+                    <div class="avatar-overlay">
+                        <i class="fas fa-camera"></i>
+                        <input type="file" id="avatarUpload" name="avatar" accept="image/*" style="display: none;">
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% if user != profile_user %}
+            <button id="followButton" class="follow-button" data-username="{{ profile_user.username }}">
+                <i class="fas {% if is_following %}fa-user-minus{% else %}fa-user-plus{% endif %}"></i>
+                <span>{% if is_following %}Smetti di seguire{% else %}Segui{% endif %}</span>
+            </button>
+        {% endif %}
+        <div class="profile-social">
+            <button class="social-button" id="followersButton" data-username="{{ profile_user.username }}">
+                {{ followers.count }} Seguaci
+            </button>
+            <button class="social-button" id="followingButton" data-username="{{ profile_user.username }}">
+                {{ following.count }} Seguiti
+            </button>
+        </div>
+    </header>
+
+    <main class="profile-content">
+        <div class="column statistics">
+            <h2 class="column-title">Statistiche</h2>
+            <table class="stats-table">
+                <tr>
+                    <th>Domande totali:</th>
+                    <td>{{ total_questions }}</td>
+                </tr>
+                <tr>
+                    <th>Risposte corrette:</th>
+                    <td>{{ correct_answers }}</td>
+                </tr>
+                <tr>
+                    <th>Percentuale di successo:</th>
+                    <td>{{ accuracy|floatformat:2 }}%</td>
+                </tr>
+            </table>
+            <div class="difficult-species">
+                <h3 class="column-subtitle">Specie più difficili</h3>
+                <ol class="difficult-species-list">
+                    {% for species in difficult_species %}
+                        <li class="species-item {% if forloop.counter > 5 %}hidden{% endif %}">
+                            {{ species.name }} ({{ species.incorrect_count }} errori)
+                        </li>
+                    {% empty %}
+                        <li>Nessuna specie difficile registrata.</li>
+                    {% endfor %}
+                </ol>
+                {% if difficult_species|length > 5 %}
+                    <button id="showMoreSpecies" class="expand-btn">Mostra di più</button>
+                {% endif %}
+            </div>
+        </div>
+    
+        <div class="column achievements">
+            <h2 class="column-title">Badge Ottenuti</h2>
+            <div class="achievement-grid">
+                {% for achievement in user_achievements %}
+                <div class="achievement-item {% if achievement.is_earned %}earned{% endif %}"
+                     data-tippy-content="<strong>{{ achievement.name }}</strong><br>{{ achievement.description }}<br>{% if achievement.is_earned %}Ottenuto il: {{ achievement.date_earned|date:'d/m/Y' }}{% else %}Progresso: {{ achievement.progress|floatformat:0 }}%{% endif %}">
+                    <img src="{{ achievement.icon_url }}" alt="{{ achievement.name }}">
+                    <span class="achievement-name">{{ achievement.name }}</span>
+                    {% if achievement.is_earned %}
+                    <span class="achievement-earned-date">{{ achievement.date_earned|date:'d/m/Y' }}</span>
+                    {% else %}
+                    <div class="achievement-progress-bar">
+                        <div class="progress" style="width: {{ achievement.progress }}%;"></div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <p>Nessun badge ottenuto finora.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <div class="additional-info">
+        <h3>Informazioni Aggiuntive</h3>
+        <p><strong>Nome:</strong> {{ profile_user.first_name }} {{ profile_user.last_name }}</p>
+        <p><strong>Email:</strong> {{ profile_user.email }}</p>
+        <p><strong>Data di nascita:</strong> {{ profile_user.userprofile.birth_date|default:"Non specificata" }}</p>
+        <p><strong>Istituto/Ente:</strong> {{ profile_user.userprofile.institution|default:"Non specificato" }}</p>
+    </div>
+</div>
+
+<div id="followModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitle"></h2>
+        <ul id="userList" class="user-list"></ul>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/@popperjs/core@2"></script>
+<script src="https://unpkg.com/tippy.js@6"></script>
+<script src="{% static 'quiz_app/js/user_profile.js' %}"></script>
+<script>
+    var currentUser = "{{ request.user.username }}";
+</script>
+{% endblock %}

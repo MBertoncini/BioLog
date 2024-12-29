@@ -1,0 +1,102 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper edit-profile">
+    <h1>Modifica Profilo</h1>
+    
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="form-section">
+            <h2>Informazioni Personali</h2>
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {{ form.birth_date.label_tag }}
+            {{ form.birth_date }}
+            {{ form.institution.label_tag }}
+            {{ form.institution }}
+        </div>
+
+        <div class="form-section">
+            <h2>Cambia Nome Utente</h2>
+            {{ username_form.username.label_tag }}
+            {{ username_form.username }}
+        </div>
+
+        <div class="form-section">
+            <h2>Cambia Password</h2>
+            {{ password_form.old_password.label_tag }}
+            {{ password_form.old_password }}
+            {{ password_form.new_password1.label_tag }}
+            {{ password_form.new_password1 }}
+            {{ password_form.new_password2.label_tag }}
+            {{ password_form.new_password2 }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" name="update_profile" class="update-profile-button">Aggiorna Profilo</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .edit-profile {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .form-section {
+        margin-bottom: 30px;
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .form-section h2 {
+        margin-top: 0;
+        margin-bottom: 15px;
+        color: #3498db;
+    }
+
+    .form-section label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .form-section input {
+        width: 100%;
+        padding: 8px;
+        margin-bottom: 15px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+
+    .form-actions {
+        text-align: center;
+    }
+
+    .update-profile-button {
+        background-color: #3498db;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    .update-profile-button:hover {
+        background-color: #2980b9;
+    }
+</style>
+{% endblock %}

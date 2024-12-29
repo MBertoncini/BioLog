@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper login-container">
+    <div class="login-form">
+        <h2>Login</h2>
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-actions">
+                <br>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </div>
+        </form>
+        <div class="signup-link">
+            <p>Non hai un account? <a href="{% url 'quiz_app:signup' %}">Registrati</a></p>
+        </div>
+    </div>
+</div>
+{% endblock %}

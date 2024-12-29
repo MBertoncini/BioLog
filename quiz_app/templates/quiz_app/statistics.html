@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="statistics-container">
+    <h1>Statistiche del Quiz</h1>
+
+    <section class="difficult-species">
+        <h2>Specie più difficili</h2>
+        <canvas id="difficultSpeciesChart"></canvas>
+        <a href="{% url 'quiz_app:download_difficult_species' %}" class="button">Scarica CSV</a>
+    </section>
+
+    <section class="user-performance">
+        <h2>Performance degli utenti</h2>
+        <p>Accuratezza media: {{ average_accuracy|floatformat:2 }}%</p>
+
+        <h3>Distribuzione dei punteggi</h3>
+        <canvas id="scoreDistributionChart"></canvas>
+
+        <h3>Andamento nel tempo</h3>
+        <canvas id="performanceTrendChart"></canvas>
+        <a href="{% url 'quiz_app:download_user_performance' %}" class="button">Scarica CSV</a>
+    </section>
+
+    <section class="common-errors">
+        <h2>Errori comuni</h2>
+        <canvas id="commonErrorsChart"></canvas>
+        <a href="{% url 'quiz_app:download_common_errors' %}" class="button">Scarica CSV</a>
+    </section>
+
+    <a href="{% url 'quiz_app:download_all_statistics' %}" class="button">Scarica tutte le statistiche (CSV)</a>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Grafico specie più difficili
+    const difficultSpeciesCtx = document.getElementById('difficultSpeciesChart').getContext('2d');
+    new Chart(difficultSpeciesCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for species in difficult_species %}'{{ species.name }}',{% endfor %}],
+            datasets: [{
+                label: 'Tasso di errore (%)',
+                data: [{% for species in difficult_species %}{{ species.error_rate|floatformat:2 }},{% endfor %}],
+                backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                borderColor: 'rgb(255, 99, 132)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Grafico distribuzione dei punteggi
+    const scoreDistributionCtx = document.getElementById('scoreDistributionChart').getContext('2d');
+    new Chart(scoreDistributionCtx, {
+        type: 'pie',
+        data: {
+            labels: [{% for dist in score_distribution %}'{{ dist.score_range }}',{% endfor %}],
+            datasets: [{
+                data: [{% for dist in score_distribution %}{{ dist.count }},{% endfor %}],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.5)',
+                    'rgba(54, 162, 235, 0.5)',
+                    'rgba(255, 206, 86, 0.5)',
+                    'rgba(75, 192, 192, 0.5)',
+                    'rgba(153, 102, 255, 0.5)'
+                ]
+            }]
+        },
+        options: {
+            responsive: true
+        }
+    });
+
+    // Grafico andamento nel tempo
+    const performanceTrendCtx = document.getElementById('performanceTrendChart').getContext('2d');
+    new Chart(performanceTrendCtx, {
+        type: 'line',
+        data: {
+            labels: [{% for trend in performance_trend %}'{{ trend.date|date:"d/m/Y" }}',{% endfor %}],
+            datasets: [{
+                label: 'Accuratezza media (%)',
+                data: [{% for trend in performance_trend %}{{ trend.avg_accuracy|floatformat:2 }},{% endfor %}],
+                borderColor: 'rgb(75, 192, 192)',
+                tension: 0.1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100
+                }
+            }
+        }
+    });
+
+    // Grafico errori comuni
+    const commonErrorsCtx = document.getElementById('commonErrorsChart').getContext('2d');
+    new Chart(commonErrorsCtx, {
+        type: 'bar',
+        data: {
+            labels: [{% for error in common_errors %}'{{ error.species__name }} / {{ error.user_answer__name }}',{% endfor %}],
+            datasets: [{
+                label: 'Conteggio errori',
+                data: [{% for error in common_errors %}{{ error.count }},{% endfor %}],
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                borderColor: 'rgb(153, 102, 255)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+{% endblock %}

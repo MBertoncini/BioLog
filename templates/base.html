@@ -1,0 +1,90 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Quiz Farfalle{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'quiz_app/css/main.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if request.COOKIES.just_logged_in %}just-logged-in{% endif %}">
+    <body data-is-logged-in="{{ user.is_authenticated|lower }}" data-username="{{ user.username }}"></body>
+    <script src="{% static 'quiz_app/js/interactions.js' %}"></script>
+    <header>
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="nav-left">
+                    <a href="{% url 'quiz_app:home' %}" class="nav-item">Home</a>
+                    <a href="{% url 'quiz_app:start_quiz' quiz_type='multiple_choice' %}" class="nav-item">Inizia Quiz</a>
+                </div>
+                <div class="nav-center">
+                    <form action="{% url 'quiz_app:user_search' %}" method="get" class="search-form">
+                        <input type="text" name="q" placeholder="Cerca utenti..." class="search-input">
+                        &nbsp;
+                        &nbsp;
+                        <button type="submit" class="search-button"><i class="fas fa-search"></i></button>
+                    </form>
+                </div>
+                <div class="nav-right">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'quiz_app:user_profile' username=user.username %}" class="nav-item profile-link">
+                            <img src="{% if user.userprofile.avatar %}{{ user.userprofile.avatar.url }}{% else %}{% static 'quiz_app/images/default_avatar.png' %}{% endif %}" alt="Profile" class="profile-icon">
+                            &nbsp;&nbsp;{{ user.username }}
+                        </a>
+                        <a href="{% url 'quiz_app:all_achievements' %}" class="nav-item achievement-link">
+                            <i class="fas fa-trophy trophy-icon"></i>
+                        </a>
+                        <a href="#" id="notificationButton" class="nav-item notification-link">
+                            <i class="fas fa-bell"></i>
+                            <span id="notificationCount" class="notification-count"></span>
+                        </a>
+                        <form action="{% url 'quiz_app:logout' %}" method="post" class="logout-form">
+                            {% csrf_token %}
+                            <button type="submit" class="logout-button">Logout</button>
+                        </form>
+                    {% else %}
+                        <a href="{% url 'quiz_app:login' %}" class="nav-item">Login</a>
+                        <a href="{% url 'quiz_app:signup' %}" class="nav-item">Registrati</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+        <div id="followModal" class="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <h2 id="modalTitle"></h2>
+                <ul id="userList"></ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="notificationPopup" class="notification-popup">
+        <div id="notificationList" class="notification-content"></div>
+    </div>
+
+    <main>
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Quiz Farfalle. Tutti i diritti riservati.</p>
+    </footer>
+
+    <script src="{% static 'quiz_app/js/main.js' %}"></script>
+    {% if user.is_authenticated %}
+        <script src="{% static 'quiz_app/js/notifications.js' %}"></script>
+    {% endif %}
+</body>
+</html>

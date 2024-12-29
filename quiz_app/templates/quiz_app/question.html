@@ -1,0 +1,56 @@
+
+{% extends 'base.html' %}
+
+{% load static %}
+
+{% block content %}
+
+<div class="quiz-container">
+    <div class="progress-bar">
+        <div class="progress" style="width: {{ progress }}%;"></div>
+    </div>
+
+    <h2 class="question-number">Domanda {{ question_number }} di 10</h2>
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div class="message {% if message.tags %}{{ message.tags }}{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    <div class="image-container">
+        <img src="{{ image.url }}" alt="Quiz Image" class="quiz-image">
+    </div>
+
+    <form method="post" action="{% url 'quiz_app:question' quiz_session.id question_number %}">
+        {% csrf_token %}
+        {% if quiz_session.quiz_type == 'multiple_choice' %}
+            <div class="options-container">
+                {% for species in species_choices %}
+                <label class="option">
+                    <input type="radio" name="species" value="{{ species.id }}" required>
+                    {{ species.name }}
+                </label>
+                {% endfor %}
+            </div>
+        {% else %}
+        {% if quiz_session.quiz_type == 'text_input' %}
+
+        <div class="text-input-container">
+            <input type="text" id="species_name" name="species_name" placeholder="Inserisci il nome della specie" autocomplete="off">
+            <div id="suggestions"></div>
+        </div>
+        {% endif %}
+        {% endif %}
+        <button type="submit" class="submit-btn">Conferma risposta</button>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if quiz_session.quiz_type == 'text_input' %}
+<script src="{% static 'quiz_app/js/species_autocomplete.js' %}"></script>
+{% endif %}
+{% endblock %}

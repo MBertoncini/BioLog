@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="unveiling-results-container">
+    <h1 class="text-center mb-4">Grazie per aver partecipato!</h1>
+    <p class="text-center mb-5">Dai un'occhiata ai nostri risultati fino ad oggi:</p>
+    
+    <div class="chart-container">
+        <canvas id="speciesChart"></canvas>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var ctx = document.getElementById('speciesChart').getContext('2d');
+        var myChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ labels|safe }},
+                datasets: [{
+                    label: 'Numero di voti',
+                    data: {{ data|safe }},
+                    backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Numero di voti'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Specie di farfalle'
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    title: {
+                        display: true,
+                        text: 'Specie di farfalle più votate'
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .unveiling-results-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    .chart-container {
+        width: 100%;
+        height: 400px;
+    }
+</style>
+{% endblock %}

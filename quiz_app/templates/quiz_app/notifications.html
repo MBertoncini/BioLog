@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="notifications-container">
+    <h2>Notifiche</h2>
+    {% for notification in notifications %}
+        <div class="notification {% if not notification.is_read %}unread{% endif %}" data-id="{{ notification.id }}">
+            {{ notification.message }}
+            <span class="notification-date">{{ notification.created_at|date:"d/m/Y H:i" }}</span>
+            {% if not notification.is_read %}
+                <button class="mark-as-read-btn">Segna come letta</button>
+            {% endif %}
+        </div>
+    {% empty %}
+        <p>Non hai notifiche.</p>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'quiz_app/js/notifications.js' %}"></script>
+{% endblock %}

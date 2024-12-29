@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper">
+    <h2>Risultati della ricerca per "{{ query }}"</h2>
+    
+    {% if users %}
+        <ul class="user-search-results">
+        {% for user in users %}
+            <li class="user-search-item">
+                <a href="{% url 'quiz_app:user_profile' username=user.username %}" class="user-search-link">
+                    <img src="{% if user.userprofile.avatar %}{{ user.userprofile.avatar.url }}{% else %}{% static 'quiz_app/images/default_avatar.png' %}{% endif %}" alt="{{ user.username }}" class="user-search-avatar">
+                    <span class="user-search-username">{{ user.username }}</span>
+                </a>
+            </li>
+        {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nessun utente trovato.</p>
+    {% endif %}
+</div>
+{% endblock %}

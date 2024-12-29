@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="content-wrapper achievements-page">
+    <h1>Tutti gli Achievement</h1>
+    
+    <div class="achievement-grid">
+        {% for achievement_data in achievements_data %}
+            <div class="achievement-item {% if not achievement_data.is_earned %}not-earned{% endif %}">
+                <img src="{{ achievement_data.achievement.icon_url }}" alt="{{ achievement_data.achievement.name }}" class="achievement-icon">
+                <h3 class="achievement-name">{{ achievement_data.achievement.name }}</h3>
+                <p class="achievement-description">{{ achievement_data.achievement.description }}</p>
+                {% if achievement_data.is_earned %}
+                    <span class="earned-date">Ottenuto il {{ achievement_data.date_earned|date:"d/m/Y" }}</span>
+                {% else %}
+                    <div class="progress-bar">
+                        <div class="progress" style="width: {{ achievement_data.progress }}%;"></div>
+                    </div>
+                    <span class="progress-text">{{ achievement_data.progress }}%</span>
+                    <span class="remaining-text">Mancano {{ achievement_data.remaining }} per completare</span>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

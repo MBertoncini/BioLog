@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="user-choices-container">
+    <h1>Le tue scelte estetiche</h1>
+    
+    <div class="choices-grid">
+        {% for choice in choices %}
+        <div class="choice-item">
+            <img src="/media/butterfly_images/{{ choice.image_filename }}" alt="{{ choice.species.name }}">
+            <p>{{ choice.species.name }}</p>
+            <p>Scelto il: {{ choice.chosen_at|date:"d/m/Y H:i" }}</p>
+        </div>
+        {% empty %}
+        <p>Non hai ancora fatto scelte estetiche.</p>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
