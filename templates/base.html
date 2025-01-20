@@ -7,11 +7,24 @@
     <title>{% block title %}Quiz Farfalle{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'quiz_app/css/main.css' %}">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/tippy.js@6/dist/tippy.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        window.addEventListener('load', function() {
+            if (typeof Chart === 'undefined') {
+                console.error('Chart.js non è stato caricato correttamente');
+            } else {
+                console.log('Chart.js caricato con successo');
+            }
+        });
+    </script>
+    <script src="https://unpkg.com/@popperjs/core@2"></script>
+    <script src="https://unpkg.com/tippy.js@6"></script>
     {% block extra_css %}{% endblock %}
 </head>
 <body class="{% if request.COOKIES.just_logged_in %}just-logged-in{% endif %}">
     <body data-is-logged-in="{{ user.is_authenticated|lower }}" data-username="{{ user.username }}"></body>
-    <script src="{% static 'quiz_app/js/interactions.js' %}"></script>
+    <script type="module" src="{% static 'quiz_app/js/interactions.js' %}"></script>
     <header>
         <nav class="navbar">
             <div class="nav-container">

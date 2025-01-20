@@ -1,3 +1,4 @@
+// Tippy.js is now available globally as 'tippy'
 document.addEventListener('DOMContentLoaded', function() {
     const followersButton = document.getElementById('followersButton');
     const followingButton = document.getElementById('followingButton');

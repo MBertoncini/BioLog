@@ -1,99 +1,259 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title %}Risultati del Quiz{% endblock %}
+
 {% block content %}
 <div class="results-container">
     <h1>Risultati del Quiz</h1>
-    
-    <div class="results-columns">
-        <div class="statistics-column">
-            <h2>Statistiche</h2>
-            
-            <div class="quiz-summary">
-                <h3>Riepilogo Quiz</h3>
-                <p>Punteggio: <strong>{{ quiz_session.score }} / {{ quiz_session.total_questions }}</strong></p>
-                <p>Accuratezza: <strong>{{ accuracy|floatformat:2 }}%</strong></p>
-                <p>Tempo impiegato: <strong>
-                    {% with time_diff=quiz_session.end_time|timeuntil:quiz_session.start_time %}
-                        {% if "," in time_diff %}
-                            {{ time_diff|cut:" 0 secondi" }}
-                        {% else %}
-                            {{ time_diff }}
-                        {% endif %}
-                    {% endwith %}
-                </strong></p>            </div>
 
-            <div class="chart-item">
-                <h3>Grafico Accuratezza</h3>
-                <canvas id="accuracyChart"></canvas>
-            </div>
-            
-            <div class="difficult-species">
-                <h3>Specie più difficili per l'utente</h3>
-                {% for species in difficult_species %}
-                    <div class="species-item" data-error-count="{{ species.error_count }}">
-                        <span class="species-name">{{ species.species__name }}:    <span class="error-count">{{ species.error_count }}</span></span>
-                        <div class="progress-bar">
-                            <div class="progress"></div>
-                        </div>
-                     
-                    </div>
-                {% endfor %}
-            </div>
-            
-           
-            <div class="chart-item">
-                <h3>Prestazioni nel tempo</h3>
-                <div class="chart-controls">
-                    <button id="last7Days">Ultimi 7 giorni</button>
-                    <button id="last30Days">Ultimi 30 giorni</button>
-                </div>
-                <canvas id="performanceChart"></canvas>
-            </div>
+    <div class="results-section">
+        <h2>Statistiche</h2>
+        <div class="quiz-summary">
+            <h3>Riepilogo Quiz</h3>
+            <p>Punteggio: <span class="score">{{ quiz_session.score }} / {{ quiz_session.total_questions }}</span></p>
+            <p>Accuratezza: <span class="accuracy">{{ accuracy|floatformat:2 }}%</span></p>
+            <p>Tempo impiegato: <span class="time">{{ time_taken }}</span></p>
         </div>
-        
-        <div class="review-column">
-            <h2>Revisione Quiz</h2>
-            {% for question in quiz_questions %}
-                <div class="question-item {% if question.is_correct %}correct{% else %}incorrect{% endif %}">
-                    <img src="{{ question.image.url }}" alt="Immagine della domanda" class="question-image">
-                    <div class="question-details">
-                        <p><strong>Domanda {{ forloop.counter }}:</strong> {{ question.species.name }}</p>
-                        <p><strong>La tua risposta:</strong> {{ question.user_answer.name }}</p>
-                        {% if not question.is_correct %}
-                            <p><strong>Risposta corretta:</strong> {{ question.species.name }}</p>
-                        {% endif %}
-                        <a href="{{ question.image.observation.url }}" target="_blank" class="observation-link">Vedi osservazione</a>
-                    </div>
-                </div>
-            {% endfor %}
+
+        <div class="chart-container">
+            <h3>Grafico Accuratezza</h3>
+            <canvas id="accuracyChart"></canvas>
         </div>
     </div>
-    
-    {% if new_achievements %}
-        <div class="achievements-section">
-            <h3>Achievement sbloccati</h3>
-            {% for achievement in new_achievements %}
-                <div class="achievement-item unlocked" data-description="{{ achievement.description }}">
-                    <img src="{{ achievement.icon.url }}" alt="{{ achievement.name }}">
-                    <span>{{ achievement.name }}</span>
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
-    
-    <div class="new-quiz-button-container">
-        <a href="{% url 'quiz_app:start_quiz' quiz_type='multiple_choice' %}" class="btn btn-primary btn-lg">Inizia un nuovo quiz</a>
+
+    <div class="results-section">
+        <h2>Revisione Quiz</h2>
+        {% for question in quiz_questions %}
+            <div class="question-review {% if question.is_correct %}correct{% else %}incorrect{% endif %}">
+                <h3>Domanda {{ forloop.counter }}: {{ question.species.name }}</h3>
+                {% if question.image %}
+                    <img src="{{ question.image.url }}" alt="{{ question.species.name }}" class="question-image">
+                {% endif %}
+                <p class="user-answer">La tua risposta: {{ question.user_answer.name|default:"Non risposto" }}</p>
+                {% if not question.is_correct %}
+                    <p class="correct-answer">Risposta corretta: {{ question.species.name }}</p>
+                {% endif %}
+                {% if question.image.observation %}
+                    <button class="observation-button" onclick="showObservation('{{ question.image.observation.url }}', '{{ question.species.name|escapejs }}')">
+                        Vedi osservazione
+                    </button>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="actions">
+        <a href="{% url 'quiz_app:start_quiz' quiz_type='multiple_choice' %}" class="button">Nuovo Quiz</a>
+        <a href="{% url 'quiz_app:statistics' %}" class="button">Vedi Statistiche</a>
     </div>
 </div>
-{% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- Modal per le osservazioni -->
+<div id="observationModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2 id="modalTitle"></h2>
+        <img id="modalImage" src="" alt="Osservazione">
+    </div>
+</div>
+
 <script>
-    var correctAnswers = {{ quiz_session.score }};
-    var incorrectAnswers = {{ quiz_session.total_questions }} - {{ quiz_session.score }};
+    console.log('Results template loaded');
+    
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js non è disponibile nella pagina dei risultati');
+    } else {
+        console.log('Chart.js è disponibile nella pagina dei risultati');
+        
+        const accuracyChart = document.getElementById('accuracyChart');
+        if (accuracyChart) {
+            new Chart(accuracyChart, {
+                type: 'pie',
+                data: {
+                    labels: ['Risposte Corrette', 'Risposte Errate'],
+                    datasets: [{
+                        data: [{{ quiz_session.score }}, {{ quiz_session.total_questions }} - {{ quiz_session.score }}],
+                        backgroundColor: [
+                            'rgba(75, 192, 192, 0.8)',  // Verde per risposte corrette
+                            'rgba(255, 99, 132, 0.8)'   // Rosso per risposte errate
+                        ],
+                        borderColor: [
+                            'rgb(75, 192, 192)',
+                            'rgb(255, 99, 132)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+            console.log('Grafico accuratezza creato con successo');
+        } else {
+            console.error('Canvas accuracyChart non trovato');
+        }
+    }
+
+    // Gestione del modal per le osservazioni
+    const modal = document.getElementById('observationModal');
+    const modalImg = document.getElementById('modalImage');
+    const modalTitle = document.getElementById('modalTitle');
+    const span = document.getElementsByClassName('close')[0];
+
+    function showObservation(url, title) {
+        modal.style.display = 'block';
+        modalImg.src = url;
+        modalTitle.textContent = title;
+    }
+
+    span.onclick = function() {
+        modal.style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = 'none';
+        }
+    }
 </script>
-<script src="{% static 'quiz_app/js/quiz_results.js' %}"></script>
-<script src="{% static 'quiz_app/js/achievement_tooltips.js' %}"></script>
+
+<style>
+    .results-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+    }
+
+    .results-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        margin-bottom: 2rem;
+        padding: 1.5rem;
+    }
+
+    .quiz-summary {
+        margin-bottom: 2rem;
+    }
+
+    .chart-container {
+        position: relative;
+        height: 400px;
+        margin: 1.5rem 0;
+    }
+
+    .question-review {
+        border-left: 4px solid #ddd;
+        margin: 1rem 0;
+        padding: 1rem;
+    }
+
+    .question-review.correct {
+        border-left-color: #4CAF50;
+    }
+
+    .question-review.incorrect {
+        border-left-color: #f44336;
+    }
+
+    .question-image {
+        max-width: 100%;
+        height: auto;
+        margin: 1rem 0;
+        border-radius: 4px;
+    }
+
+    .user-answer {
+        font-weight: bold;
+    }
+
+    .correct-answer {
+        color: #4CAF50;
+        font-weight: bold;
+    }
+
+    .observation-button {
+        background-color: #2196F3;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        cursor: pointer;
+        margin-top: 1rem;
+    }
+
+    .observation-button:hover {
+        background-color: #1976D2;
+    }
+
+    .actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+    }
+
+    .button {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+
+    .button:hover {
+        background-color: #45a049;
+    }
+
+    /* Modal styles */
+    .modal {
+        display: none;
+        position: fixed;
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.9);
+    }
+
+    .modal-content {
+        margin: auto;
+        display: block;
+        width: 80%;
+        max-width: 800px;
+        position: relative;
+        top: 50%;
+        transform: translateY(-50%);
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+    }
+
+    .close {
+        position: absolute;
+        right: 20px;
+        top: 10px;
+        font-size: 30px;
+        cursor: pointer;
+    }
+
+    #modalImage {
+        width: 100%;
+        height: auto;
+    }
+
+    .score, .accuracy, .time {
+        font-weight: bold;
+        color: #2196F3;
+    }
+</style>
 {% endblock %}

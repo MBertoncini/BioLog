@@ -1,134 +1,221 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-<div class="statistics-container">
-    <h1>Statistiche del Quiz</h1>
+{% block title %}Statistiche - Quiz Farfalle{% endblock %}
 
-    <section class="difficult-species">
-        <h2>Specie più difficili</h2>
-        <canvas id="difficultSpeciesChart"></canvas>
-        <a href="{% url 'quiz_app:download_difficult_species' %}" class="button">Scarica CSV</a>
-    </section>
-
-    <section class="user-performance">
-        <h2>Performance degli utenti</h2>
-        <p>Accuratezza media: {{ average_accuracy|floatformat:2 }}%</p>
-
-        <h3>Distribuzione dei punteggi</h3>
-        <canvas id="scoreDistributionChart"></canvas>
-
-        <h3>Andamento nel tempo</h3>
-        <canvas id="performanceTrendChart"></canvas>
-        <a href="{% url 'quiz_app:download_user_performance' %}" class="button">Scarica CSV</a>
-    </section>
-
-    <section class="common-errors">
-        <h2>Errori comuni</h2>
-        <canvas id="commonErrorsChart"></canvas>
-        <a href="{% url 'quiz_app:download_common_errors' %}" class="button">Scarica CSV</a>
-    </section>
-
-    <a href="{% url 'quiz_app:download_all_statistics' %}" class="button">Scarica tutte le statistiche (CSV)</a>
-</div>
+{% block extra_css %}
+<style>    
+    .button {
+        display: inline-block;
+        padding: 0.5rem 1rem;
+        background-color: #4CAF50;
+        color: white;
+        text-decoration: none;
+        border-radius: 4px;
+        margin: 0.5rem 0;
+        transition: background-color 0.3s;
+    }
+    
+    .button:hover {
+        background-color: #45a049;
+    }
+    
+    .stats-header {
+        color: #333;
+        margin-bottom: 1rem;
+        border-bottom: 2px solid #eee;
+        padding-bottom: 0.5rem;
+    }
+    
+    .stats-value {
+        font-size: 1.2rem;
+        font-weight: bold;
+        color: #2196F3;
+    }
+</style>
 {% endblock %}
 
-{% block extra_js %}
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% block content %}
+<div class="statistics-container">
+    <h1 class="stats-header">Statistiche del Quiz</h1>
+
+    <section class="statistics-section">
+        <h2>Specie più difficili</h2>
+        <div class="chart-container">
+            <canvas id="difficultSpeciesChart"></canvas>
+        </div>
+        <a href="{% url 'quiz_app:download_difficult_species' %}" class="button">
+            <i class="fas fa-download"></i> Scarica CSV
+        </a>
+    </section>
+
+    <section class="statistics-section">
+        <h2>Performance degli utenti</h2>
+        <p>Accuratezza media: <span class="stats-value">{{ average_accuracy|default:0|floatformat:2 }}%</span></p>
+
+        <h3>Distribuzione dei punteggi</h3>
+        <div class="chart-container">
+            <canvas id="scoreDistributionChart"></canvas>
+        </div>
+
+        <h3>Andamento nel tempo</h3>
+        <div class="chart-container">
+            <canvas id="performanceTrendChart"></canvas>
+        </div>
+        <a href="{% url 'quiz_app:download_user_performance' %}" class="button">
+            <i class="fas fa-download"></i> Scarica CSV
+        </a>
+    </section>
+
+    <section class="statistics-section">
+        <h2>Errori comuni</h2>
+        <div class="chart-container">
+            <canvas id="commonErrorsChart"></canvas>
+        </div>
+        <a href="{% url 'quiz_app:download_common_errors' %}" class="button">
+            <i class="fas fa-download"></i> Scarica CSV
+        </a>
+    </section>
+
+    <a href="{% url 'quiz_app:download_all_statistics' %}" class="button">
+        <i class="fas fa-file-download"></i> Scarica tutte le statistiche (CSV)
+    </a>
+</div>
+
 <script>
-    // Grafico specie più difficili
-    const difficultSpeciesCtx = document.getElementById('difficultSpeciesChart').getContext('2d');
-    new Chart(difficultSpeciesCtx, {
-        type: 'bar',
-        data: {
-            labels: [{% for species in difficult_species %}'{{ species.name }}',{% endfor %}],
-            datasets: [{
-                label: 'Tasso di errore (%)',
-                data: [{% for species in difficult_species %}{{ species.error_rate|floatformat:2 }},{% endfor %}],
-                backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                borderColor: 'rgb(255, 99, 132)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
+    console.log('Statistics template loaded');
+    
+    if (typeof Chart === 'undefined') {
+        console.error('Chart.js non è disponibile nella pagina delle statistiche');
+    } else {
+        console.log('Chart.js è disponibile nella pagina delle statistiche');
+        
+        // Grafico specie difficili
+        const difficultSpeciesData = {
+            labels: [{% for species in difficult_species %}'{{ species.name|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            data: [{% for species in difficult_species %}{{ species.error_rate|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        
+        const difficultSpeciesChart = document.getElementById('difficultSpeciesChart');
+        if (difficultSpeciesChart) {
+            new Chart(difficultSpeciesChart, {
+                type: 'bar',
+                data: {
+                    labels: difficultSpeciesData.labels,
+                    datasets: [{
+                        label: 'Tasso di errore (%)',
+                        data: difficultSpeciesData.data,
+                        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                        borderColor: 'rgb(255, 99, 132)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
                 }
-            }
+            });
         }
-    });
 
-    // Grafico distribuzione dei punteggi
-    const scoreDistributionCtx = document.getElementById('scoreDistributionChart').getContext('2d');
-    new Chart(scoreDistributionCtx, {
-        type: 'pie',
-        data: {
-            labels: [{% for dist in score_distribution %}'{{ dist.score_range }}',{% endfor %}],
-            datasets: [{
-                data: [{% for dist in score_distribution %}{{ dist.count }},{% endfor %}],
-                backgroundColor: [
-                    'rgba(255, 99, 132, 0.5)',
-                    'rgba(54, 162, 235, 0.5)',
-                    'rgba(255, 206, 86, 0.5)',
-                    'rgba(75, 192, 192, 0.5)',
-                    'rgba(153, 102, 255, 0.5)'
-                ]
-            }]
-        },
-        options: {
-            responsive: true
-        }
-    });
-
-    // Grafico andamento nel tempo
-    const performanceTrendCtx = document.getElementById('performanceTrendChart').getContext('2d');
-    new Chart(performanceTrendCtx, {
-        type: 'line',
-        data: {
-            labels: [{% for trend in performance_trend %}'{{ trend.date|date:"d/m/Y" }}',{% endfor %}],
-            datasets: [{
-                label: 'Accuratezza media (%)',
-                data: [{% for trend in performance_trend %}{{ trend.avg_accuracy|floatformat:2 }},{% endfor %}],
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true,
-                    max: 100
+        // Grafico distribuzione punteggi
+        const scoreDistributionData = {
+            labels: [{% for dist in score_distribution %}'{{ dist.score_range|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            data: [{% for dist in score_distribution %}{{ dist.count }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        
+        const scoreDistributionChart = document.getElementById('scoreDistributionChart');
+        if (scoreDistributionChart) {
+            new Chart(scoreDistributionChart, {
+                type: 'bar',
+                data: {
+                    labels: scoreDistributionData.labels,
+                    datasets: [{
+                        label: 'Numero di quiz',
+                        data: scoreDistributionData.data,
+                        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                        borderColor: 'rgb(54, 162, 235)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
                 }
-            }
+            });
         }
-    });
 
-    // Grafico errori comuni
-    const commonErrorsCtx = document.getElementById('commonErrorsChart').getContext('2d');
-    new Chart(commonErrorsCtx, {
-        type: 'bar',
-        data: {
-            labels: [{% for error in common_errors %}'{{ error.species__name }} / {{ error.user_answer__name }}',{% endfor %}],
-            datasets: [{
-                label: 'Conteggio errori',
-                data: [{% for error in common_errors %}{{ error.count }},{% endfor %}],
-                backgroundColor: 'rgba(153, 102, 255, 0.5)',
-                borderColor: 'rgb(153, 102, 255)',
-                borderWidth: 1
-            }]
-        },
-        options: {
-            responsive: true,
-            scales: {
-                y: {
-                    beginAtZero: true
+        // Grafico andamento nel tempo
+        const performanceTrendData = {
+            labels: [{% for trend in performance_trend %}'{{ trend.date|date:"d/m/Y"|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            data: [{% for trend in performance_trend %}{{ trend.avg_accuracy|floatformat:2 }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        
+        const performanceTrendChart = document.getElementById('performanceTrendChart');
+        if (performanceTrendChart) {
+            new Chart(performanceTrendChart, {
+                type: 'line',
+                data: {
+                    labels: performanceTrendData.labels,
+                    datasets: [{
+                        label: 'Accuratezza media (%)',
+                        data: performanceTrendData.data,
+                        borderColor: 'rgb(75, 192, 192)',
+                        tension: 0.1,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
                 }
-            }
+            });
         }
-    });
+
+        // Grafico errori comuni
+        const commonErrorsData = {
+            labels: [{% for error in common_errors %}'{{ error.species__name|escapejs }} → {{ error.user_answer__name|default:"Non risposto"|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+            data: [{% for error in common_errors %}{{ error.count }}{% if not forloop.last %}, {% endif %}{% endfor %}]
+        };
+        
+        const commonErrorsChart = document.getElementById('commonErrorsChart');
+        if (commonErrorsChart) {
+            new Chart(commonErrorsChart, {
+                type: 'bar',
+                data: {
+                    labels: commonErrorsData.labels,
+                    datasets: [{
+                        label: 'Numero di errori',
+                        data: commonErrorsData.data,
+                        backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                        borderColor: 'rgb(153, 102, 255)',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    }
 </script>
 {% endblock %}

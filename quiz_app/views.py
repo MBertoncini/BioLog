@@ -43,7 +43,7 @@ import csv
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib.auth.decorators import user_passes_test
-from django.db.models import Count, F, FloatField, Avg, Case, When, Value
+from django.db.models import Count, F, FloatField, Avg, Case, When, Value, Q, CharField
 from django.db.models.functions import TruncDate
 from .models import Species, QuizSession, QuizQuestion
 from django.http import HttpResponse
@@ -83,23 +83,33 @@ def statistics_view(request):
 
     # 1. Specie più difficili
     difficult_species = get_difficult_species(family, user_id)
-    context['difficult_species'] = list(difficult_species.values('name', 'error_rate'))
+    difficult_species_data = list(difficult_species.values('name', 'error_rate'))
+    context['difficult_species'] = difficult_species_data
+    print("Debug - Difficult Species:", difficult_species_data)
 
     # 2. Performance degli utenti
     user_performances = get_user_performances(family, user_id)
-    context['average_accuracy'] = user_performances.aggregate(avg_accuracy=Avg('accuracy'))['avg_accuracy']
+    avg_accuracy = user_performances.aggregate(avg_accuracy=Avg('accuracy'))['avg_accuracy']
+    context['average_accuracy'] = avg_accuracy
+    print("Debug - Average Accuracy:", avg_accuracy)
 
     # Distribuzione dei punteggi
     score_distribution = get_score_distribution(user_performances)
-    context['score_distribution'] = list(score_distribution)
+    score_distribution_data = list(score_distribution)
+    context['score_distribution'] = score_distribution_data
+    print("Debug - Score Distribution:", score_distribution_data)
 
     # Andamento nel tempo
     performance_trend = get_performance_trend(family, user_id)
-    context['performance_trend'] = list(performance_trend)
+    performance_trend_data = list(performance_trend)
+    context['performance_trend'] = performance_trend_data
+    print("Debug - Performance Trend:", performance_trend_data)
 
     # 3. Errori comuni
     common_errors = get_common_errors(family, user_id)
-    context['common_errors'] = list(common_errors)
+    common_errors_data = list(common_errors)
+    context['common_errors'] = common_errors_data
+    print("Debug - Common Errors:", common_errors_data)
 
     # Aggiungi le opzioni per i filtri
     context['families'] = Species.objects.values_list('family', flat=True).distinct()

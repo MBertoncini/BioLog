@@ -48,7 +48,7 @@ LOGGING = {
         },
     },
 }
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.176', '192.168.229.243', '172.18.186.22', '172.18.182.210', '192.168.225.243', '172.18.168.165', '192.168.1.196', '192.168.225.243']#penultimo è hotspot telefono, l'ultimo è eduroam
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.176', '192.168.229.243', '172.18.186.22', '172.18.182.210', '192.168.225.243', '172.18.168.165', '192.168.1.196', '192.168.225.243', '192.168.115.243']#penultimo è hotspot telefono, l'ultimo è eduroam
 
 LOGIN_REDIRECT_URL = '/quiz/'  # o dove vuoi che l'utente venga reindirizzato dopo il login
 LOGOUT_REDIRECT_URL = '/quiz/'  # o dove vuoi che l'utente venga reindirizzato dopo il logout
@@ -76,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'quiz_app.middleware.JustLoggedInMiddleware',
+    'quiz_app.middleware.SecurityHeadersMiddleware',
 ]
 
 ROOT_URLCONF = 'quiz_project.urls'
@@ -180,5 +181,3 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 #EMAIL_USE_TLS = True
 #EMAIL_HOST_USER = 'tua_email@esempio.com'
 #EMAIL_HOST_PASSWORD = 'tua_password'
-
-
