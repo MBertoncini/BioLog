@@ -603,7 +603,12 @@ def handle_post_request(request, quiz_session, question_number):
             
             return redirect('quiz_app:question', quiz_session_id=quiz_session.id, question_number=next_question_number)
         else:
+            from django.contrib.messages import get_messages
+
+            storage = get_messages(request)
+            storage.used = True  # Cancella i messaggi precedenti
             messages.error(request, "La specie o il genere inserito non è valido. Per favore, riprova.")
+
     
     return handle_get_request(request, quiz_session, question_number)
 
@@ -1103,17 +1108,24 @@ import logging
 logger = logging.getLogger(__name__)
 
 def species_suggestions(request):
-    print("species_suggestions view called")
-    query = request.GET.get('query', '').strip()
-    print(f"Query received: {query}")
+    print("\n=== Species Suggestions API Call ===")
+    print(f"Method: {request.method}")
+    print(f"GET params: {request.GET}")
+    query = request.GET.get('query', '').strip().capitalize()
+    print(f"Processed query: {query}")
     
     if not query:
+        print("Empty query, returning empty list")
         return JsonResponse({'suggestions': []})
     
-    suggestions = Species.objects.filter(
-        name__istartswith=query
-    ).values_list('name', flat=True)[:10]
-    
-    result = list(suggestions)
-    print(f"Returning suggestions: {result}")
-    return JsonResponse({'suggestions': result})
+    try:
+        species = Species.objects.filter(
+            name__istartswith=query
+        ).values_list('name', flat=True)[:10]
+        
+        result = list(species)
+        print(f"Found {len(result)} suggestions: {result}")
+        return JsonResponse({'suggestions': result})
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return JsonResponse({'error': str(e)}, status=500)

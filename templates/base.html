@@ -99,5 +99,6 @@
     {% if user.is_authenticated %}
         <script src="{% static 'quiz_app/js/notifications.js' %}"></script>
     {% endif %}
+    {% block extra_js %}{% endblock %}
 </body>
 </html>

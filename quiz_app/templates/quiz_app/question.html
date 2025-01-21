@@ -39,17 +39,15 @@
                 <input type="text" id="species_name" name="species_name" placeholder="Inserisci il nome della specie" autocomplete="off">
                 <div id="suggestions"></div>
             </div>
+            {% else %}
             {% endif %}
         {% endif %}
         <button type="submit" class="submit-btn">Conferma risposta</button>
     </form>
 </div>
-{% endblock %}
-
 {% block extra_js %}
 {% if quiz_session.quiz_type == 'text_input' %}
-    {% load static %}
-    <link rel="stylesheet" href="{% static 'quiz_app/css/styles.css' %}">
-    <script src="{% static 'quiz_app/js/species_autocomplete.js' %}"></script>
+    <script src="{% static 'quiz_app/js/species_autocomplete.js' %}" type="text/javascript"></script>
 {% endif %}
+{% endblock %}
 {% endblock %}
