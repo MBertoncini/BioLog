@@ -167,7 +167,51 @@ main {
     color: #3498db;
 }
 
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+}
 
+.modal-content {
+    background-color: #fefefe;
+    margin: 10% auto;
+    padding: 20px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 500px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+}
+
+#modalTitle {
+    margin-top: 0;
+    color: #333;
+    font-size: 24px;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 10px;
+}
 
 .user-list {
     list-style-type: none;
@@ -178,10 +222,11 @@ main {
 }
 
 .user-item {
-    background-color: #f9f9f9;
-    border-radius: 5px;
-    overflow: hidden;
-    transition: transform 0.3s;
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.3s ease;
 }
 
 .user-item:hover {
@@ -198,11 +243,11 @@ main {
 }
 
 .user-avatar {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
+    margin-right: 15px;
     object-fit: cover;
-    margin-bottom: 5px;
 }
 
 .user-username {
@@ -291,7 +336,7 @@ footer {
 
 /* Contenuto principale */
 .content-wrapper {
-    max-width: 1000px;
+    max-width: 800px;
     width: 100%;
     margin: 0 auto;
 }
@@ -538,7 +583,7 @@ canvas {
 
 /* Stili per la pagina del profilo utente */
 .user-profile {
-    max-width: 1000px;
+    max-width: 800px;
     margin: 0 auto;
     padding: 20px;
 }
@@ -959,26 +1004,7 @@ canvas {
     background-color: #0056b3;
 }
 
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.4);
-}
 
-.modal-content {
-    background-color: #fefefe;
-    margin: 15% auto;
-    padding: 20px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 500px;
-    border-radius: 5px;
-}
 
 .close {
     color: #aaa;
@@ -1068,6 +1094,7 @@ body {
     transform: translateY(-5px);
 }
 
+
 .achievement-icon {
     width: 50px;
     height: 50px;
@@ -1120,6 +1147,30 @@ body {
     color: #4CAF50;
 }
 
+.notification {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    position: relative;
+}
+
+
+.mark-as-read-btn {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #3498db;
+    color: white;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 3px;
+    cursor: pointer;
+}
+
+.mark-as-read-btn:hover {
+    background-color: #2980b9;
+}
+
 .notification-link,
 .achievement-link {
     position: relative;
@@ -1131,32 +1182,39 @@ body {
     position: absolute;
     top: -5px;
     right: -5px;
-    background-color: rgb(71, 70, 70);
+    background-color: red;
     color: white;
     border-radius: 50%;
-    padding: 2px 5px;
-    font-size: 0.7em;
+    padding: 2px 6px;
+    font-size: 12px;
+    display: none;
+}
+
+.notification-link {
+    position: relative;
 }
 
 .fas {
     font-size: 1.2em;
 }
 
-.notification-popup {
-    display: none;
-    position: absolute;
-    top: 60px;
-    right: 20px;
-    width: 300px;
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    z-index: 1000;
+.notification-popup.show {
+    display: block;
 }
 
-.notification-content {
-    padding: 15px;
+.notification-popup {
+    display: none; /* Inizialmente nascosto */
+    position: absolute;
+    top: 60px; /* Aggiusta in base all'altezza della tua navbar */
+    right: 20px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+    width: 300px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .notification-item {
@@ -1166,6 +1224,15 @@ body {
 
 .notification-item:last-child {
     border-bottom: none;
+}
+
+.notification-item.unread {
+    background-color: #f0f0f0;
+}
+
+.notification-date {
+    font-size: 0.8em;
+    color: #666;
 }
 
 .social-buttons {
@@ -1320,7 +1387,7 @@ body {
 
 /* Layout principale */
 .content-wrapper {
-    max-width: 1000px;
+    max-width: 800px;
     margin: 40px auto 0;
     padding: 20px;
     background-color: white;

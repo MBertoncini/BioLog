@@ -48,14 +48,14 @@ LOGGING = {
         },
     },
 }
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '192.168.1.176', '192.168.229.243', '172.18.186.22', '172.18.182.210', '192.168.225.243', '172.18.168.165', '192.168.1.196', '192.168.225.243', '192.168.115.243']#penultimo è hotspot telefono, l'ultimo è eduroam
+ALLOWED_HOSTS = ['localhost', '192.168.176.243', '127.0.0.1', '192.168.1.176', '192.168.229.243', '172.18.186.22', '172.18.182.210', '192.168.225.243', '172.18.168.165', '192.168.1.196', '192.168.225.243', '192.168.115.243']#penultimo è hotspot telefono, l'ultimo è eduroam
 
 LOGIN_REDIRECT_URL = '/quiz/'  # o dove vuoi che l'utente venga reindirizzato dopo il login
 LOGOUT_REDIRECT_URL = '/quiz/'  # o dove vuoi che l'utente venga reindirizzato dopo il logout
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    'django.contrib.admin', 
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -146,7 +146,15 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'quiz_app', 'static'),  # Modifica questo percorso
+]
+
+# Aggiungi questa impostazione
+STATICFILES_FINDERS = [
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+]
 
 
 # Media files

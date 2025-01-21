@@ -1104,19 +1104,16 @@ logger = logging.getLogger(__name__)
 
 def species_suggestions(request):
     print("species_suggestions view called")
-    query = request.GET.get('query', '').capitalize()
-    print(f"Query: {query}")
-    logger.info(f"Received query: {query}")
+    query = request.GET.get('query', '').strip()
+    print(f"Query received: {query}")
     
     if not query:
         return JsonResponse({'suggestions': []})
     
-    species_suggestions = list(Species.objects.filter(name__istartswith=query).values_list('name', flat=True)[:10])
-    logger.info(f"Found suggestions: {species_suggestions}")
+    suggestions = Species.objects.filter(
+        name__istartswith=query
+    ).values_list('name', flat=True)[:10]
     
-    # Aggiungi il genere se non è già presente nelle specie
-    genus = query.split()[0]
-    if genus not in species_suggestions:
-        species_suggestions.insert(0, genus)
-    
-    return JsonResponse({'suggestions': species_suggestions})
+    result = list(suggestions)
+    print(f"Returning suggestions: {result}")
+    return JsonResponse({'suggestions': result})

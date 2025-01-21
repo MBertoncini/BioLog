@@ -35,9 +35,9 @@
                     <p class="correct-answer">Risposta corretta: {{ question.species.name }}</p>
                 {% endif %}
                 {% if question.image.observation %}
-                    <button class="observation-button" onclick="showObservation('{{ question.image.observation.url }}', '{{ question.species.name|escapejs }}')">
-                        Vedi osservazione
-                    </button>
+                <a href="{{ question.image.observation.url }}" target="_blank" class="observation-button">
+                    Vedi osservazione su iNaturalist
+                </a>
                 {% endif %}
             </div>
         {% endfor %}
@@ -46,15 +46,6 @@
     <div class="actions">
         <a href="{% url 'quiz_app:start_quiz' quiz_type='multiple_choice' %}" class="button">Nuovo Quiz</a>
         <a href="{% url 'quiz_app:statistics' %}" class="button">Vedi Statistiche</a>
-    </div>
-</div>
-
-<!-- Modal per le osservazioni -->
-<div id="observationModal" class="modal">
-    <div class="modal-content">
-        <span class="close">&times;</span>
-        <h2 id="modalTitle"></h2>
-        <img id="modalImage" src="" alt="Osservazione">
     </div>
 </div>
 
@@ -97,28 +88,6 @@
             console.log('Grafico accuratezza creato con successo');
         } else {
             console.error('Canvas accuracyChart non trovato');
-        }
-    }
-
-    // Gestione del modal per le osservazioni
-    const modal = document.getElementById('observationModal');
-    const modalImg = document.getElementById('modalImage');
-    const modalTitle = document.getElementById('modalTitle');
-    const span = document.getElementsByClassName('close')[0];
-
-    function showObservation(url, title) {
-        modal.style.display = 'block';
-        modalImg.src = url;
-        modalTitle.textContent = title;
-    }
-
-    span.onclick = function() {
-        modal.style.display = 'none';
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = 'none';
         }
     }
 </script>
@@ -212,45 +181,7 @@
     .button:hover {
         background-color: #45a049;
     }
-
-    /* Modal styles */
-    .modal {
-        display: none;
-        position: fixed;
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.9);
-    }
-
-    .modal-content {
-        margin: auto;
-        display: block;
-        width: 80%;
-        max-width: 800px;
-        position: relative;
-        top: 50%;
-        transform: translateY(-50%);
-        background: white;
-        padding: 20px;
-        border-radius: 8px;
-    }
-
-    .close {
-        position: absolute;
-        right: 20px;
-        top: 10px;
-        font-size: 30px;
-        cursor: pointer;
-    }
-
-    #modalImage {
-        width: 100%;
-        height: auto;
-    }
-
+    
     .score, .accuracy, .time {
         font-weight: bold;
         color: #2196F3;

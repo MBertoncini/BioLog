@@ -1,10 +1,8 @@
-
 {% extends 'base.html' %}
 
 {% load static %}
 
 {% block content %}
-
 <div class="quiz-container">
     <div class="progress-bar">
         <div class="progress" style="width: {{ progress }}%;"></div>
@@ -36,13 +34,12 @@
                 {% endfor %}
             </div>
         {% else %}
-        {% if quiz_session.quiz_type == 'text_input' %}
-
-        <div class="text-input-container">
-            <input type="text" id="species_name" name="species_name" placeholder="Inserisci il nome della specie" autocomplete="off">
-            <div id="suggestions"></div>
-        </div>
-        {% endif %}
+            {% if quiz_session.quiz_type == 'text_input' %}
+            <div class="text-input-container">
+                <input type="text" id="species_name" name="species_name" placeholder="Inserisci il nome della specie" autocomplete="off">
+                <div id="suggestions"></div>
+            </div>
+            {% endif %}
         {% endif %}
         <button type="submit" class="submit-btn">Conferma risposta</button>
     </form>
@@ -51,6 +48,8 @@
 
 {% block extra_js %}
 {% if quiz_session.quiz_type == 'text_input' %}
-<script src="{% static 'quiz_app/js/species_autocomplete.js' %}"></script>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'quiz_app/css/styles.css' %}">
+    <script src="{% static 'quiz_app/js/species_autocomplete.js' %}"></script>
 {% endif %}
 {% endblock %}
